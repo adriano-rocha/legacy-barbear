@@ -108,7 +108,10 @@ legacy-barber/
 
 ## 7. Estado atual do projeto
 
-Fase 0 concluída (planejamento e specs). Próximo passo: implementação da
-landing page (`landing-page/`) em paralelo ao início da Fase 1 (provisionamento
-da VPS). Consulte o roteiro completo de fases fora deste repositório, no
-histórico de planejamento do projeto.
+Fase 0 concluída (planejamento e specs). **Landing page (`landing-page/`)
+concluída e publicada na Vercel** — 5 seções + rodapé, sem header (decisão
+deliberada: página de scroll único, sem necessidade de navegação).
+
+Próximo foco: **`whatsapp-assistant/`**, começando pela Fase 1 do roteiro
+(provisionamento da VPS). O frontend está funcionalmente fechado; qualquer
+trabalho futuro nele é ajuste pontual, não desenvolvimento ativo.
