@@ -28,10 +28,12 @@
 
 - Informa serviços, preços e duração.
 - Informa horário de funcionamento e endereço.
-- Coleta dados para pré-agendamento: **nome, serviço desejado, dia e período preferido
-  (manhã/tarde)**.
-- Confirma o pré-agendamento reforçando que **um humano fará a confirmação final**
-  (não há integração com agenda real nesta fase do projeto).
+- Coleta dados para pré-agendamento na conversa: **nome, serviço desejado, dia e
+  período preferido (manhã/tarde)** — e, ao final, **direciona o cliente para o
+  botão "Chamar no WhatsApp" da página**, com esses dados já resumidos, para
+  confirmar com um humano de verdade. O chat não tem banco de dados: nada do
+  que é coletado ali persiste além da aba aberta, então a confirmação real
+  sempre acontece no WhatsApp, nunca só dentro do widget.
 - Responde perguntas frequentes (formas de pagamento aceitas, se precisa agendar ou
   aceita encaixe, se atende crianças).
 
@@ -55,10 +57,15 @@ O atendente deve encerrar a automação e sinalizar transferência quando o clie
 - Enviar mensagens fora do escopo repetidamente após já ter sido redirecionado uma vez.
 
 **Mensagem padrão de handoff:**
-> "Vou te transferir para um de nossos atendentes para continuar por aqui. 🙂"
+> "Para isso, o melhor é falar direto com a gente — clica no botão de
+> WhatsApp aqui embaixo que um atendente te ajuda. 🙂"
 
-Após o handoff, a automação **para de responder** naquela conversa (flag de
-"conversa assumida por humano" — detalhado na spec técnica do fluxo n8n, Fase 5).
+Diferente de um bot de WhatsApp com sessão própria, o chat widget não
+"transfere" tecnicamente nada — ele não tem como assumir ou encerrar uma
+conversa em outro canal. O handoff é, na prática, **direcionar o clique**
+para o botão de WhatsApp que já existe na página (ver
+`docs/infra-chat-widget.md`), que abre uma conversa real, sem IA, com um
+humano.
 
 ## 6. Fora de escopo
 
@@ -70,16 +77,19 @@ Qualquer assunto que não seja sobre os serviços da Legacy Barber. Resposta pad
 
 Se a chamada à API falhar (timeout, erro 5xx, etc.), o cliente **nunca** fica sem
 resposta. Mensagem padrão de fallback:
-> "Desculpa, tive um problema técnico agora. Pode repetir sua mensagem em
-> instrumentos? Se o problema continuar, já vou chamar um atendente."
+> "Desculpa, tive um problema técnico agora. Pode repetir sua mensagem?
+> Se o problema continuar, clica no botão de WhatsApp aqui embaixo."
 
 Esse é um requisito de resiliência, não um "nice to have" — será coberto por teste
 de integração na Fase 6.
 
-## 8. Proteções operacionais (n8n)
+## 8. Proteções operacionais (chat widget)
 
-- Ignorar mensagens vindas de grupos (`@g.us` no JID do WhatsApp).
-- Ignorar mensagens enviadas pelo próprio número do bot (evita loop de
-  autorresposta).
-- Rate limit: no máximo N respostas por minuto por conversa (valor exato a
-  definir na Fase 5, junto com o desenho do fluxo).
+O widget é público e sem autenticação — qualquer visitante da página pode
+abri-lo. Sem essas proteções, uso abusivo poderia gerar custo inesperado
+na API do Claude (ver `docs/infra-chat-widget.md` para detalhes técnicos):
+
+- Limite de tamanho por mensagem enviada.
+- Limite de número de mensagens por sessão de chat.
+- `max_tokens` baixo na resposta — o atendente responde curto, como convém
+  a um FAQ, não em parágrafos longos.
